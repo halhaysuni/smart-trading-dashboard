@@ -66,8 +66,8 @@ try:
     fig = go.Figure()
     fig.add_trace(go.Candlestick(x=df["timestamp"], open=df["open"], high=df["high"],
                                  low=df["low"], close=df["close"], name="Price"))
-    fig.add_trace(go.Scatter(x=df["timestamp"], y=df["ema200"], line=dict(color="blue", width=1), name="EMA200"))
-    fig.add_trace(go.Scatter(x=df["timestamp"], y=df["vwap"], line=dict(color="purple", width=1), name="VWAP"))
+    fig.add_trace(go.Scatter(x=df["timestamp"], y=df["ema200"].values.flatten(), line=dict(color="blue", width=1), name="EMA200"))
+    fig.add_trace(go.Scatter(x=df["timestamp"], y=df["vwap"].values.flatten(), line=dict(color="purple", width=1), name="VWAP"))
     st.plotly_chart(fig)
 
     st.write("Latest Indicators:")
