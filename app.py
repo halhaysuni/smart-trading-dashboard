@@ -1,19 +1,10 @@
-
 import streamlit as st
 import pandas as pd
-import ccxt
 import yfinance as yf
 import ta
 import plotly.graph_objects as go
 
-def fetch_crypto(symbol="BTC/USDT", timeframe="1h", limit=200):
-    exchange = ccxt.binance()
-    ohlcv = exchange.fetch_ohlcv(symbol, timeframe=timeframe, limit=limit)
-    df = pd.DataFrame(ohlcv, columns=["timestamp", "open", "high", "low", "close", "volume"])
-    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
-    return df
-
-def fetch_stock(symbol="AAPL", interval="1h", period="7d"):
+def fetch_data(symbol="AAPL", interval="1h", period="7d"):
     df = yf.download(tickers=symbol, interval=interval, period=period)
     df.reset_index(inplace=True)
     df.rename(columns={"Date": "timestamp", "Open": "open", "High": "high", "Low": "low",
@@ -51,14 +42,10 @@ def get_signal(latest):
         return "HOLD"
 
 st.title("📈 Smart Trading Strategy Dashboard")
-symbol = st.text_input("Enter Symbol (e.g. BTC/USDT or AAPL):", "BTC/USDT")
+symbol_input = st.text_input("Enter Symbol (e.g. BTC-USD or AAPL):", "BTC-USD")
 
 try:
-    if "/" in symbol:
-        df = fetch_crypto(symbol)
-    else:
-        df = fetch_stock(symbol)
-
+    df = fetch_data(symbol_input)
     df = add_indicators(df)
     signal = get_signal(df.iloc[-1])
     st.subheader(f"Signal: {signal}")
@@ -66,8 +53,8 @@ try:
     fig = go.Figure()
     fig.add_trace(go.Candlestick(x=df["timestamp"], open=df["open"], high=df["high"],
                                  low=df["low"], close=df["close"], name="Price"))
-    fig.add_trace(go.Scatter(x=df["timestamp"], y=df["ema200"].values.flatten(), line=dict(color="blue", width=1), name="EMA200"))
-    fig.add_trace(go.Scatter(x=df["timestamp"], y=df["vwap"].values.flatten(), line=dict(color="purple", width=1), name="VWAP"))
+    fig.add_trace(go.Scatter(x=df["timestamp"], y=df["ema200"], line=dict(color="blue", width=1), name="EMA200"))
+    fig.add_trace(go.Scatter(x=df["timestamp"], y=df["vwap"], line=dict(color="purple", width=1), name="VWAP"))
     st.plotly_chart(fig)
 
     st.write("Latest Indicators:")
